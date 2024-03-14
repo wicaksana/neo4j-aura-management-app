@@ -1,6 +1,7 @@
 import argparse
 import requests
 import os
+import sys
 from urllib.parse import urljoin
 
 base_uri = 'https://api.neo4j.io/'
@@ -210,7 +211,7 @@ if __name__ == '__main__':
     delete = subparser.add_parser(name='delete', help='delete instance')
     delete.add_argument('--instance_id')
 
-    args = parser.parse_args()
+    args = parser.parse_args(args=None if sys.argv[1:] else ['--help'])
 
     if args.command == 'authenticate':
         authenticate(args.user.strip(), args.password.strip())
@@ -224,4 +225,5 @@ if __name__ == '__main__':
         restore_snapshot(args.instance_id, args.snapshot_id)
     elif args.command == 'delete':
         delete_instance(args.instance_id)
+
 
