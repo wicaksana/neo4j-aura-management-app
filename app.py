@@ -9,10 +9,10 @@ token_filename = '.token'
 
 def authenticate(user, password):
     """
-    Authenticate against Neo4j Aura API
-    :param user: username
-    :param password: password
-    :return:
+    Authenticate against Neo4j Aura API.
+    Reference: https://neo4j.com/docs/aura/platform/api/authentication/#_creating_credentials
+    :param user: client ID
+    :param password: client secret
     """
     uri = urljoin(base_uri, 'oauth/token')
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
@@ -45,6 +45,7 @@ def get_token():
 def create_instance(name, version, region, memory, instance_type, tenant_id, cloud_provider):
     """
     Creates an Aura instance.
+    Reference: https://neo4j.com/docs/aura/platform/api/specification/#/instances/post-instances
     :param name: instance name
     :param version: Neo4j version
     :param region: Cloud region
@@ -52,7 +53,6 @@ def create_instance(name, version, region, memory, instance_type, tenant_id, clo
     :param instance_type: Instance type
     :param tenant_id: Aura tenant ID
     :param cloud_provider: Cloud provider of choice
-    :return:
     """
     if check_token_file_existence():
         token = get_token()
@@ -75,7 +75,7 @@ def create_instance(name, version, region, memory, instance_type, tenant_id, clo
         print('Creating the instance...')
         r = requests.post(uri, headers=headers, json=data)
         if r.status_code == 202:
-            print(r.json())
+            print(f'Instance is being created: {r.json()}')
         else:
             print(f'[!] Something is wrong: Error code: {r.status_code} - {r.json()}')
     else:
@@ -85,6 +85,7 @@ def create_instance(name, version, region, memory, instance_type, tenant_id, clo
 def resize_instance(instance_id, new_memory):
     """
     Resize an instance.
+    Reference: https://neo4j.com/docs/aura/platform/api/specification/#/instances/patch-instance-id
     :param instance_id:
     :param new_memory:
     """
@@ -98,7 +99,7 @@ def resize_instance(instance_id, new_memory):
         }
         r = requests.patch(uri, headers=headers, json=data)
         if r.status_code == 202:
-            print(r.json())
+            print(f'Instance is being resized: {r.json()}')
         else:
             print(f'[!] Something is wrong: Error code: {r.status_code} - {r.json()}')
     else:
@@ -108,6 +109,7 @@ def resize_instance(instance_id, new_memory):
 def create_snapshot(instance_id):
     """
     Create an on-demand snapshot from an Aura instance.
+    Reference: https://neo4j.com/docs/aura/platform/api/specification/#/instances/post-snapshots
     :param instance_id: Instance ID
     """
     uri = urljoin(base_uri, f'v1/instances/{instance_id}/snapshots')
@@ -119,7 +121,7 @@ def create_snapshot(instance_id):
         }
         r = requests.post(uri, headers=headers)
         if r.status_code == 202:
-            print(r.json())
+            print(f'Snapshot is being taken: {r.json()}')
         else:
             print(f'[!] Something is wrong: Error code: {r.status_code} - {r.json()}')
     else:
@@ -127,6 +129,12 @@ def create_snapshot(instance_id):
 
 
 def restore_snapshot(instance_id, snapshot_id):
+    """
+    Restore a snapshot of an instance.
+    Reference: https://neo4j.com/docs/aura/platform/api/specification/#/instances/post-restore-snapshot
+    :param instance_id: instance id
+    :param snapshot_id: snapshot id
+    """
     uri = urljoin(base_uri, f'v1/instances/{instance_id}/snapshots/{snapshot_id}/restore')
     if check_token_file_existence():
         token = get_token()
@@ -136,7 +144,7 @@ def restore_snapshot(instance_id, snapshot_id):
         }
         r = requests.post(uri, headers=headers)
         if r.status_code == 202:
-            print(r.json())
+            print(f'Snapshot is being restored: {r.json()}')
         else:
             print(f'[!] Something is wrong: Error code: {r.status_code} - {r.json()}')
     else:
@@ -146,6 +154,7 @@ def restore_snapshot(instance_id, snapshot_id):
 def delete_instance(instance_id):
     """
     Delete an instance.
+    Reference: https://neo4j.com/docs/aura/platform/api/specification/#/instances/delete-instance-id
     :param instance_id: instance ID
     """
     uri = urljoin(base_uri, f'v1/instances/{instance_id}')

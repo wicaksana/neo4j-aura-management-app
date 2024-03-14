@@ -9,8 +9,9 @@ A Python script to interact with Aura API for:
 
 # How to
 
-You need to authenticate first. Upon successful authentication, the following command will generate 
-a file named `.token` to store the token that will be used for other commands:
+You need to authenticate first. Please read this [documentation](https://neo4j.com/docs/aura/platform/api/authentication/#_creating_credentials) 
+in order to generate the credentials. Upon successful authentication, the following command will generate a file named 
+`.token` to store the token that will be used for other commands:
 ```shell
 python app.py authenticate \
 --user <username> \
