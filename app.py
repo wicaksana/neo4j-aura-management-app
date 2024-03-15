@@ -183,7 +183,7 @@ def load_dummy_data(uri, user, password):
         driver.verify_connectivity()
         with driver.session() as session:
             print('Generate nodes (User, Device, Lobby)...')
-            for i in range(1, 1001):
+            for i in range(2 * 1000 * 1000):
                 session.run(f'CREATE (:User {{name: "User{i}"}})')
                 session.run(f"CREATE (:Device {{id: 'Device{i}'}})")
                 session.run(f"CREATE (:Lobby {{name: 'Lobby{i}'}})")
@@ -197,7 +197,7 @@ def load_dummy_data(uri, user, password):
 
             # Create relationships
             print('Generate Relationships...')
-            for i in range(1, 1001):
+            for i in range(2 * 1000 * 1000):
                 session.run(
                     f"MATCH (u:User), (l:Lobby) WHERE u.name = 'User{i}' AND l.name = 'Lobby{i}' "
                     f"CREATE (l)-[:PLAYED_BY]->(u)")
