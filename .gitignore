@@ -253,3 +253,4 @@ fabric.properties
 *.vsix
 
 .token
+test.ipynb

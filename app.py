@@ -1,8 +1,11 @@
 import argparse
 import requests
+import time
+from datetime import timedelta, datetime
 import os
 import sys
 from urllib.parse import urljoin
+from neo4j import GraphDatabase
 
 base_uri = 'https://api.neo4j.io/'
 token_filename = '.token'
@@ -174,6 +177,40 @@ def delete_instance(instance_id):
         print('[!] Aura token is not found. Please authenticate first.')
 
 
+def load_dummy_data(uri, user, password):
+    start_time = time.monotonic()
+    with GraphDatabase.driver(uri, auth=(user, password)) as driver:
+        driver.verify_connectivity()
+        with driver.session() as session:
+            print('Generate nodes (User, Device, Lobby)...')
+            for i in range(1, 1001):
+                session.run(f'CREATE (:User {{name: "User{i}"}})')
+                session.run(f"CREATE (:Device {{id: 'Device{i}'}})")
+                session.run(f"CREATE (:Lobby {{name: 'Lobby{i}'}})")
+
+            # Create dates for a month
+            print('Generate node (Date)...')
+            start_date = datetime.now()
+            for i in range(30):
+                date = start_date + timedelta(days=i)
+                session.run(f"CREATE (:Date {{date: '{date.strftime('%Y-%m-%d')}'}})")
+
+            # Create relationships
+            print('Generate Relationships...')
+            for i in range(1, 1001):
+                session.run(
+                    f"MATCH (u:User), (l:Lobby) WHERE u.name = 'User{i}' AND l.name = 'Lobby{i}' "
+                    f"CREATE (l)-[:PLAYED_BY]->(u)")
+                session.run(
+                    f"MATCH (d:Date), (l:Lobby) WHERE d.date = '{start_date.strftime('%Y-%m-%d')}' "
+                    f"AND l.name = 'Lobby{i}' CREATE (l)-[:TRANSACTION]->(d)")
+                session.run(
+                    f"MATCH (u:User), (dev:Device) WHERE u.name = 'User{i}' AND dev.id = 'Device{i}' "
+                    f"CREATE (u)-[:LOGGED_IN]->(dev)")
+    end_time = time.monotonic()
+    print(f'Time elapsed: {timedelta(seconds=end_time - start_time)}')
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     subparser = parser.add_subparsers(dest='command')
@@ -211,12 +248,19 @@ if __name__ == '__main__':
     delete = subparser.add_parser(name='delete', help='delete instance')
     delete.add_argument('--instance_id')
 
+    # Load dummy data
+    load_dummy = subparser.add_parser(name='load_dummy', help='Load dummy data')
+    load_dummy.add_argument('--uri', help='Aura instance URI', required=True)
+    load_dummy.add_argument('--user', help='Username', required=True)
+    load_dummy.add_argument('--password', help='Password', required=True)
+
     args = parser.parse_args(args=None if sys.argv[1:] else ['--help'])
 
     if args.command == 'authenticate':
         authenticate(args.user.strip(), args.password.strip())
     elif args.command == 'create':
-        create_instance(args.name, args.version, args.region, args.memory, args.type, args.tenant_id, args.cloud_provider)
+        create_instance(args.name, args.version, args.region, args.memory, args.type, args.tenant_id,
+                        args.cloud_provider)
     elif args.command == 'resize':
         resize_instance(args.instance_id, args.new_memory)
     elif args.command == 'create_snapshot':
@@ -225,5 +269,8 @@ if __name__ == '__main__':
         restore_snapshot(args.instance_id, args.snapshot_id)
     elif args.command == 'delete':
         delete_instance(args.instance_id)
+    elif args.command == 'load_dummy':
+        load_dummy_data(args.uri, args.user, args.password)
+
 
 

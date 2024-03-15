@@ -56,3 +56,11 @@ Delete an instance (example):
 python app.py delete \
 --instance_id 57f58e24
 ```
+
+Load dummy data (example):
+```shell
+python app.py load_dummy \
+--uri neo4j+s://blabla.databases.neo4j.io \
+--user neo4j \
+--password <password>
+```
