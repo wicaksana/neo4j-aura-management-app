@@ -6,7 +6,6 @@ A Python script to interact with Aura API for:
 * Resizing an existing instance
 * Taking an on-demand snapshot
 * Restoring an on-demand Snapshot
-* Load dummy data
 
 # How to
 
@@ -60,12 +59,4 @@ Delete an instance (example). Refer to this [documentation](https://neo4j.com/do
 ```shell
 python app.py delete \
 --instance_id 57f58e24
-```
-
-Load dummy data (example):
-```shell
-python app.py load_dummy \
---uri neo4j+s://blabla.databases.neo4j.io \
---user neo4j \
---password <password>
 ```
